@@ -2,3 +2,4 @@ Flask==2.0.1
 WTForms==2.3.3
 boto3==1.17.100
 Flask-SQLAlchemy==2.5.1
+webssh==1.5.3
