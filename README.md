@@ -1,3 +1,3 @@
 # AWS EC2 Watchdog
 
-This application is built using Flask,SQLAlchemy,Bootstrap and Javascript
+Powered by Flask, SQLAlchemy, Bootstrap and Javascript
