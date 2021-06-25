@@ -1,0 +1,100 @@
+{% extends 'home/layout.html' %}
+{% block content %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{url_for('home.home')}}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{url_for('load_ec2.loadec2',rowinfo=row+':'+awsregion)}}">EC2 Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">SSH EC2 instance</li>    
+        </ol>
+    </nav>
+    <div class="pt-3">
+        <p class="h5" style="color: purple;"><img class="me-2" src="https://img.icons8.com/ios-filled/30/000000/console.png"/>{{instance_id}} </p>
+    </div>
+    <div class="row mt-5">
+      <div class="col">
+        <form action="" method="post">
+          {{form.hidden_tag()}}
+          <div class="mb-3">
+            <label for="formGroupExampleInput" class="form-label">Public IPv4 address</label>
+            {{form.hostname(class="form-control w-75 disabled",id="ipublic")}}
+          </div>
+          <div class="mb-3">
+            <label for="formGroupExampleInput2" class="form-label">Username</label>
+            {{form.username(class="form-control w-75")}}
+          </div>
+          <div class="mb-3">
+            <label for="formGroupExampleInput2" class="form-label">Password</label>
+            {{form.password(class="form-control w-75")}}
+          </div>
+          <div class="mb-3">
+            <label for="formGroupExampleInput2" class="form-label">SSH Title</label>
+            {{form.title(class="form-control w-75",id="title")}}
+          </div>
+          <div class="mb3">
+            {{form.submit(class="btn btn-success btn-sm")}}
+          </div>
+        </form>
+      </div>
+      <div class="col border-start">
+        <div class="ms-3">
+          <h5>Enable Password Authentication in EC2 instance</h5>
+          <div class="accordion accordion-flush" id="accordionFlushExample">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="flush-headingOne">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                  Step 1 : Login to EC2 instance using private key
+                </button>
+              </h2>
+              <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                <div class="accordion-body"><code> sudo ssh -i your-key.pem username@ip_address-or-hostname</code></div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="flush-headingTwo">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+                  Step 2 : Setup password for the user
+                </button>
+              </h2>
+              <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
+                <div class="accordion-body">
+                  <p>Example : ubuntu user</p>
+                  <code>sudo passwd ubuntu</code>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="flush-headingThree">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
+                  Step 3 : Edit /etc/ssh/sshd_config
+                </button>
+              </h2>
+              <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
+                <div class="accordion-body">
+                  <code>sudo vim /etc/ssh/sshd_config</code>
+                  <p>Find the line containing 'PasswordAuthentication' parameter and change its value from 'no' to 'yes'</p>
+                  <p class="mark">PasswordAuthentication yes</p>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="flush-headingFour">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseFour" aria-expanded="false" aria-controls="flush-collapseFour">
+                  Step 4 : Restart SSH service
+                </button>
+              </h2>
+              <div id="flush-collapseFour" class="accordion-collapse collapse" aria-labelledby="flush-headingFour" data-bs-parent="#accordionFlushExample">
+                <div class="accordion-body">
+                  <code>sudo service ssh restart  #for ubuntu</code><br>
+                  <code>sudo service sshd restart #for centos</code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      document.getElementById("ipublic").value = "{{publicip}}";
+      document.getElementById("title").value = "{{instance_id}}";
+    </script>
+{% endblock content %}

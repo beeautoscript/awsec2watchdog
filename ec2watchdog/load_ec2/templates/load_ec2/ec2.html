@@ -1,0 +1,33 @@
+{% extends 'home/layout.html' %}
+{% block content %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{url_for('home.home')}}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">EC2</li>
+        </ol>
+    </nav>
+    <h6>Select Region</h6>
+    <form action="" method="POST">
+        {{form.hidden_tag()}}
+        <div class="row">
+            <div class="col">
+                {{form.awsregion(class="form-select mt-3 mb-3 ")}}
+            </div>
+            <div class="col">
+                {{form.submit(class="btn btn-success  mt-3 mb-3",id="ec2load",onclick="ec2()")}}
+                <button class="btn btn-success mt-3 mb-3" type="button" disabled id="loadec2">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Loading EC2 instances
+                </button>
+            </div>
+    </form>
+    <script>
+        document.getElementById("loadec2").style.display = "none";
+    </script>
+    <script>
+        function ec2(){
+            document.getElementById("ec2load").style.display = "none";
+            document.getElementById("loadec2").style.display = "block";
+        }
+    </script>
+{% endblock content %}

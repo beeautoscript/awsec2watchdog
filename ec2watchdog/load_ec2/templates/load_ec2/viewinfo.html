@@ -1,0 +1,311 @@
+{% extends 'home/layout.html' %}
+{% block content %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{url_for('home.home')}}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{url_for('load_ec2.loadec2',rowinfo=row+':'+awsregion)}}">EC2 Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Loading EC2 instance summary</li>    
+        </ol>
+    </nav>
+    <div class="pt-4">
+        <p class="h5" style="color: purple;">{{instance_id}} ({{instance_data[0]['Instances'][0]['Tags'][0]['Value']}})</p>
+    </div>
+    <button type="button" class="btn btn-secondary btn-sm float-end mb-3 " onclick="sync()" id="sync">Sync Instance info</button>
+    <button type="button" class="btn btn-secondary btn-sm float-end mb-3 " onclick="sync()" id="loadsync">
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Syncing Instance info
+    </button>
+    <nav class="mt-4">
+        <div class="nav nav-tabs" id="nav-tab" role="tablist">
+          <button class="nav-link active" id="nav-details-tab" data-bs-toggle="tab" data-bs-target="#nav-details" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Details</button>
+          <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Security</button>
+          <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Storage</button>
+        </div>
+    </nav>
+    <div class="tab-content" id="nav-tabContent">
+        <!-- Details Tab -->
+        <div class="tab-pane fade show active" id="nav-details" role="tabpanel" aria-labelledby="nav-details-tab">
+            <div class="row mt-3">
+                <div class="col">
+                    <div class="mt-2">
+                        <p class="text-muted">Instance ID</p>
+                        <p class="text-dark">{{instance_id}}</p>
+                    </div>
+                    <div>
+                        <p class="text-muted">Instance state</p>
+                        {% if instance_data[0]['Instances'][0]['State']['Name'] == "running" %}
+                            <p class="text-dark">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill text-success" viewBox="0 0 16 16">
+                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                </svg>
+                                {{instance_data[0]['Instances'][0]['State']['Name'].capitalize()}}
+                            </p>
+                        {% elif instance_data[0]['Instances'][0]['State']['Name'] == "stopped" %}
+                            <p>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash-circle-fill text-danger" viewBox="0 0 16 16">
+                                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"/>
+                                </svg>
+                                {{instance_data[0]['Instances'][0]['State']['Name'].capitalize()}}
+                            </p>
+                        {% else %}
+                            <p class="text-dark">{{instance_data[0]['Instances'][0]['State']['Name'].capitalize()}}</p>
+                        {% endif %}    
+                    </div>
+                    <div>
+                        <p class="text-muted">Instance type</p>
+                        <p>{{instance_data[0]['Instances'][0]['InstanceType']}}</p>
+                    </div>
+                    <div>
+                        <p class="text-muted">Platform</p>
+                        <p>{{ami_info['Images'][0]['PlatformDetails']}}</p>
+                    </div>
+                    <div>
+                        <p class="text-muted">Architecture</p>
+                        <p>{{ami_info['Images'][0]['Architecture']}}</p>
+                    </div>
+                </div>
+                <div class="col border-start">
+                    <div class="mt-2">
+                        <p class="text-muted">Public IPv4 address</p>
+                            {% if not 'PublicIpAddress' in instance_data[0]['Instances'][0].keys() %}
+                                <p>NA</p>
+                            {% else %}
+                                <p id="publicip">
+                                    <a href="#" class="text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Copy Public IPv4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-intersect text-secondary" viewBox="0 0 16 16" onclick="copypublicip()">
+                                        <path d="M0 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2H2a2 2 0 0 1-2-2V2zm5 10v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2v5a2 2 0 0 1-2 2H5zm6-8V2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2V6a2 2 0 0 1 2-2h5z"/>
+                                    </svg>
+                                </a>
+                                {{instance_data[0]['Instances'][0]['PublicIpAddress']}}
+                            {% endif %}    
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-muted">Public IPv4 DNS</p>
+                            {% if instance_data[0]['Instances'][0]['PublicDnsName'] == '' %}
+                                <p>NA</p>
+                            {% else %}
+                                <p id="publicdns">
+                                    <a href="#" class="text-decoration-none" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Copy Public DNS">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-intersect text-secondary" viewBox="0 0 16 16" onclick="copypublicdns()">
+                                            <path d="M0 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2h2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2H2a2 2 0 0 1-2-2V2zm5 10v2a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2v5a2 2 0 0 1-2 2H5zm6-8V2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2V6a2 2 0 0 1 2-2h5z"/>
+                                        </svg>
+                                    </a>
+                                    {{instance_data[0]['Instances'][0]['PublicDnsName']}}
+                                </p>
+                            {% endif %}    
+                    </div>
+                    <div>
+                        <p class="text-muted">AMI ID</p>
+                        <p>{{instance_data[0]['Instances'][0]['ImageId']}}</p>
+                    </div>
+                    <div>
+                        <p class="text-muted">AMI Location</p>
+                        <p>{{ami_info['Images'][0]['ImageLocation']}}</p>
+                    </div>
+                </div>
+                <div class="col border-start">
+                    <div class="mt-2">
+                        <p class="text-muted">Private IPv4 address</p>
+                        <p>{{instance_data[0]['Instances'][0]['PrivateIpAddress']}}</p>
+                    </div>
+                    <div>
+                        <p class="text-muted">Private IPv4 DNS</p>
+                        <p>{{instance_data[0]['Instances'][0]['PrivateDnsName']}}</p>
+                    </div>
+                    <div>
+                        <p class="text-muted">VPC ID</p>
+                        <p>{{instance_data[0]['Instances'][0]['VpcId']}}</p>
+                    </div>
+                    <div>
+                        <p class="text-muted">Subnet ID</p>
+                        <p>{{instance_data[0]['Instances'][0]['SubnetId']}}</p>
+                    </div>
+                    <div>
+                        <p class="text-muted">Availability zone</p>
+                        <p>{{instance_data[0]['Instances'][0]['Placement']['AvailabilityZone']}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Security-->
+        <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+            <div class="row mt-3">
+                <div class="col">
+                    <div>
+                        <p class="text-muted">Security groups</p>
+                        {% for i in instance_data[0]['Instances'][0]['SecurityGroups'] %}
+                            <p>{{i['GroupId']}} ({{i['GroupName']}})</p>
+                        {% endfor %}
+                    </div>
+                    <div>
+                        <p class="text-muted">Inbound rules</p>
+                        <table class="table  table-bordered table-hover table-sm">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">Port range</th>
+                                    <th scope="col">Protocol</th>
+                                    <th scope="col">Source</th>
+                                    <th scope="col">Security groups</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in sg_data['IpPermissions'] %}
+                                    <tr>
+                                        <td>{{i['FromPort']}}</td>
+                                        <td>{{i['IpProtocol'].upper()}}</td>
+                                        <td>{{i['IpRanges'][0]['CidrIp']}}</td>
+                                        <td>{{sg_data['GroupName']}}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>   
+                </div>
+                <div class="col border-start">
+                    <div>
+                        <p class="text-muted">Owner ID</p>
+                        <p>{{sg_data['OwnerId']}}</p>
+                    </div>
+                    <div>
+                        <p class="text-muted">Outbound rules</p>
+                        <table class="table  table-bordered table-hover table-sm">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">Port range</th>
+                                    <th scope="col">Protocol</th>
+                                    <th scope="col">Destination</th>
+                                    <th scope="col">Security groups</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in sg_data['IpPermissionsEgress'] %}
+                                    <tr>
+                                        {% if i['IpProtocol'] == '-1' %}
+                                            <td>All</td>
+                                            <td>All</td>
+                                            <td>{{i['IpRanges'][0]['CidrIp']}}</td>
+                                            <td>{{sg_data['GroupName']}}</td>
+                                        {% else %}
+                                        {% endif %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Storage-->
+        <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
+            <div class="row mt-3">
+                <div class="col">
+                    <div>
+                        <p class="text-muted">Root device name</p>
+                        <p>{{instance_data[0]['Instances'][0]['RootDeviceName']}}</p>
+                    </div>
+                </div>
+                <div class="col border-start">
+                    <div>
+                        <p class="text-muted">Root device type</p>
+                        <p>{{instance_data[0]['Instances'][0]['RootDeviceType'].upper()}}</p>
+                    </div>
+                </div>
+                <div class="col border-start">
+                    <div>
+                        <p class="text-muted">EBS optimization</p>
+                        {% if instance_data[0]['Instances'][0]['EbsOptimized'] == False %}
+                            <p>disabled</p>
+                        {% else %}
+                            <p>enabled</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="row mt3">
+                <div>
+                    <p class="text-muted">Block devices</p>
+                    <table class="table  table-bordered table-hover table-sm">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col">Volume ID</th>
+                                <th scope="col">Device name</th>
+                                <th scope="col">Volume size (GiB)</th>
+                                <th scope="col">Attachement status</th>
+                                <th scope="col">Attachement time</th>
+                                <th scope="col">Encrypted</th>
+                                <th scope="col">Delete on termination</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in volume_data %}
+                                <tr>
+                                    <td>{{i['Attachments'][0]['VolumeId']}}</td>
+                                    <td>{{i['Attachments'][0]['Device']}}</td>
+                                    <td>{{i['Size']}}</td>
+                                    {% if i['Attachments'][0]['State'] == 'attached' %}
+                                        <td>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill text-success" viewBox="0 0 16 16">
+                                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                            </svg>
+                                            {{i['Attachments'][0]['State'].capitalize()}}
+                                        </td>
+                                    {% else %}
+                                    {% endif %}
+                                    
+                                    <td>{{i['Attachments'][0]['AttachTime'].strftime("%A")}}
+                                        {{i['Attachments'][0]['AttachTime'].strftime("%B")}}
+                                        {{i['Attachments'][0]['AttachTime'].strftime("%d")}}
+                                        {{i['Attachments'][0]['AttachTime'].strftime("%Y")}}
+                                    </td>
+                                    {% if i['Attachments'][0]['Encrypted'] == False %}
+                                        <td>No</td>
+                                    {% else %}
+                                        <td>Yes</td>
+                                    {% endif %}
+                                    {% if i['Attachments'][0]['DeleteOnTermination'] == True %}
+                                        <td>Yes</td>
+                                    {% else %}
+                                        <td>No</td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>document.getElementById("loadsync").style.display = "none";</script>
+    <script>
+        function sync(){
+            location.reload();
+            document.getElementById("sync").style.display = "none";
+            document.getElementById("loadsync").style.display = "block";
+            
+        }
+    </script>
+    <script>
+        function copypublicdns(){
+            document.getElementById("publicdns").style.color = "green";
+            var range = document.createRange();
+            range.selectNode(document.getElementById("publicdns"));
+            window.getSelection().removeAllRanges(); // clear current selection
+            window.getSelection().addRange(range); // to select text
+            document.execCommand("copy");
+            window.getSelection().removeAllRanges();// to deselect
+        }
+
+    </script>
+    <script>
+        function copypublicip(){
+            document.getElementById("publicip").style.color = "green";
+            var range = document.createRange();
+            range.selectNode(document.getElementById("publicip"));
+            window.getSelection().removeAllRanges(); // clear current selection
+            window.getSelection().addRange(range); // to select text
+            document.execCommand("copy");
+            window.getSelection().removeAllRanges();// to deselect
+        }
+    </script>
+{% endblock content %}

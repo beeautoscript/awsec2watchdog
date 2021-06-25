@@ -1,0 +1,51 @@
+{% extends 'home/layout.html'%}
+{% block content %}
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{url_for('home.home')}}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Register AWS AccessKey</li>
+        </ol>
+    </nav>
+    <div class="row g-5">
+        <div class="col-md-6">
+            <form  class="mt-2" action="" method="POST">
+                {{form.hidden_tag()}}
+                <div class="mb-3">
+                    <label for="formGroupExampleInput" class="form-label">Key Name</label>
+                    {{form.keyname(class="form-control",id="keyname")}}
+                </div>
+                <div class="mb-3">
+                    <label for="formGroupExampleInput" class="form-label">Access Key ID</label>
+                    {{form.access_keyid(class="form-control",id="accesskeyid")}}
+                </div>
+                <div class="mb-3">
+                    <label for="formGroupExampleInput2" class="form-label">Secret Key</label>
+                    {{form.secret_keyid(class="form-control",id="secretkeyid")}}
+                </div>
+                {{form.submit(class="btn btn-primary",onclick="addkey()",id="add")}}
+                <button class="btn btn-primary" type="button" disabled id="loadkey">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Adding Key...
+                </button>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.getElementById("loadkey").style.display = "none";
+    </script>
+    <script>
+        function addkey(){
+            var x = document.getElementById("keyname").value;
+            var y = document.getElementById("accesskeyid").value;
+            var z = document.getElementById("secretkeyid").value;
+
+            if (x.length == 0 || y.length == 0 || z.length == 0){
+                    console.log("Empty values");
+                    return false;
+            } else{
+                document.getElementById("add").style.display = "none";
+                document.getElementById("loadkey").style.display = "block";
+            }
+        }
+    </script>
+{% endblock content %}
